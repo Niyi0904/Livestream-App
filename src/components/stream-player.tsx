@@ -91,12 +91,16 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
   useEffect(() => {
     if (canHost && !obsMode) {
       const createTracks = async () => {
-        const tracks = await createLocalTracks({ audio: true, video: true });
-        const camTrack = tracks.find((t) => t.kind === Track.Kind.Video);
-        if (camTrack && localVideoEl?.current) {
-          camTrack.attach(localVideoEl.current);
+        try {
+          const tracks = await createLocalTracks({ audio: true, video: true });
+          const camTrack = tracks.find((t) => t.kind === Track.Kind.Video);
+          if (camTrack && localVideoEl?.current) {
+            camTrack.attach(localVideoEl.current);
+          }
+          setLocalVideoTrack(camTrack as LocalVideoTrack);
+        } catch (e: any) {
+          console.error("Failed to create local tracks (permission denied?)", e);
         }
-        setLocalVideoTrack(camTrack as LocalVideoTrack);
       };
       void createTracks();
     }
@@ -116,7 +120,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
   // Include Track.Source.Unknown for RTMP ingress tracks (OBS streams arrive as Unknown source)
   const allRemoteVideoTracks = useTracks(
     [Track.Source.Camera, Track.Source.Unknown]
-  ).filter((t) => t.participant.identity !== localParticipant.identity);
+  ).filter((t) => t.participant.identity !== localParticipant?.identity);
 
   // Ingress/OBS tracks come in as Unknown source
   const obsIngressTracks = allRemoteVideoTracks.filter(
@@ -137,6 +141,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
 
   const authToken = useAuthToken();
   const onLeaveStage = async () => {
+    if (!localParticipant?.identity) return;
     await fetch("/api/remove_from_stage", {
       method: "POST",
       headers: {
@@ -186,7 +191,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
                 color="gray"
                 className="absolute bottom-2 right-2"
               >
-                {localParticipant.identity} (you)
+                {localParticipant?.identity} (you)
               </Badge>
             </div>
           </div>
@@ -253,7 +258,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
               <Flex gap="2">
                 <MediaDeviceSettings />
                 {roomMetadata?.creator_identity !==
-                  localParticipant.identity && (
+                  localParticipant?.identity && (
                     <Button size="1" onClick={onLeaveStage}>
                       Leave stage
                     </Button>

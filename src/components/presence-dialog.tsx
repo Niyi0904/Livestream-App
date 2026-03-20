@@ -235,7 +235,7 @@ export function PresenceDialog({
                   key={participant.identity}
                   participant={participant}
                   isCurrentUser={
-                    participant.identity === localParticipant.identity
+                    localParticipant?.identity === participant.identity
                   }
                   isHost={isHost}
                 />
@@ -252,7 +252,7 @@ export function PresenceDialog({
                   key={participant.identity}
                   participant={participant}
                   isCurrentUser={
-                    participant.identity === localParticipant.identity
+                    localParticipant?.identity === participant.identity
                   }
                   isHost={isHost}
                 />

@@ -33,7 +33,7 @@ function ChatMessage({ message }: { message: ReceivedChatMessage }) {
           weight="bold"
           size="1"
           className={
-            localParticipant.identity === message.from?.identity
+            localParticipant?.identity === message.from?.identity
               ? "text-accent-11"
               : "text-gray-11"
           }
@@ -61,8 +61,8 @@ export function Chat() {
     }
   }, [metadata]);
 
-  // HACK: why do we get duplicate messages?
   const messages = useMemo(() => {
+    if (!chatMessages) return [];
     const timestamps = chatMessages.map((msg) => msg.timestamp);
     const filtered = chatMessages.filter(
       (msg, i) => !timestamps.includes(msg.timestamp, i + 1)
