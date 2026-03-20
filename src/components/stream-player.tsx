@@ -131,17 +131,19 @@ export function StreamPlayer({
 
   // Include Track.Source.Unknown for RTMP ingress tracks (OBS streams arrive as Unknown source)
   const allRemoteVideoTracks = useTracks(
-    [Track.Source.Camera, Track.Source.Unknown]
+    [Track.Source.Camera, Track.Source.Unknown, Track.Source.ScreenShare]
   ).filter((t) => t.participant.identity !== localParticipant?.identity);
 
-  // Ingress/OBS tracks come in as Unknown source
+  // Ingress/OBS tracks come in as Unknown source or from a participant with 'obs' in identity
   const obsIngressTracks = allRemoteVideoTracks.filter(
-    (t) => t.source === Track.Source.Unknown
+    (t) =>
+      t.source === Track.Source.Unknown ||
+      t.participant.identity.toLowerCase().includes("obs")
   );
 
   // When OBS is live, only show OBS. When not live, show camera participants.
   const obsIsLive = obsIngressTracks.length > 0;
-  const isLive = obsIsLive || (isHost && Boolean(localVideoTrack));
+  const isLive = obsIsLive || allRemoteVideoTracks.length > 0 || (isHost && Boolean(localVideoTrack));
 
   // Browser-based remote participants (Camera source only)
   const remoteVideoTracks = allRemoteVideoTracks.filter(

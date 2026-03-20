@@ -30,8 +30,8 @@ export default function WatchPage({
   roomToken: string;
   serverUrl: string;
 }) {
+  const [isLandscape, setIsLandscape] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-
 
   return (
     <TokenContext.Provider value="viewer-session">
@@ -40,7 +40,13 @@ export default function WatchPage({
 
 
           {/* Main Content Area: Centered Stream Player */}
-          <Flex direction="column" className="flex-1 relative order-1">
+          <Flex 
+            direction="column" 
+            className={cn(
+              "flex-1 relative order-1 transition-all duration-300",
+              isLandscape && "fixed inset-0 z-[60] bg-black md:relative md:inset-auto md:z-auto"
+            )}
+          >
             {/* Mobile Chat Toggle Button */}
             <Box className="absolute top-6 left-6 z-40 md:hidden">
               <Button
@@ -54,10 +60,24 @@ export default function WatchPage({
               </Button>
             </Box>
 
-            <Box className="flex-1 h-full overflow-hidden flex items-center justify-center">
-              <Box className="w-full max-w-[1920px] h-full shadow-2xl overflow-hidden relative border border-white/5 glow-violet">
-                <StreamPlayer isHost={false} onlyShowIngress={true} />
-              </Box>
+            {/* Landscape Toggle Button (Mobile Only) */}
+            <Box className="absolute bottom-6 right-6 z-40 md:hidden">
+              <Button
+                size="3"
+                variant="solid"
+                color="violet"
+                className="rounded-full px-4 glass border-white/10 shadow-xl font-bold uppercase tracking-wider text-[10px]"
+                onClick={() => setIsLandscape(!isLandscape)}
+              >
+                {isLandscape ? "Exit Landscape" : "Landscape Mode"}
+              </Button>
+            </Box>
+
+            <Box className={cn(
+              "flex-1 bg-black overflow-hidden relative transition-all duration-300",
+              isLandscape ? "h-screen w-screen" : "h-full"
+            )}>
+              <StreamPlayer isHost={false} onlyShowIngress={true} />
             </Box>
 
             {/* Floating Overlays */}
