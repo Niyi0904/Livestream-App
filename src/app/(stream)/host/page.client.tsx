@@ -5,7 +5,7 @@ import { ReactionBar } from "@/components/reaction-bar";
 import { StreamPlayer } from "@/components/stream-player";
 import { TokenContext } from "@/components/token-context";
 import { LiveKitRoom } from "@livekit/components-react";
-import { Box, Flex, Button, Heading, TextField, Text as RadixText, Card } from "@radix-ui/themes";
+import { Box, Flex, Button, Heading, TextField, Text as RadixText, Card, IconButton } from "@radix-ui/themes";
 import { useState } from "react";
 import { CopyIcon, CheckIcon } from "@radix-ui/react-icons"; // Icons for the button
 
@@ -121,90 +121,129 @@ export default function HostPage({
   return (
     <TokenContext.Provider value={authToken}>
       <LiveKitRoom serverUrl={serverUrl} token={roomToken} connect={true} audio={false} video={false}>
-        <Flex className="w-full h-screen">
-          <Box className="bg-slate-2 min-w-[300px] p-4 border-r border-slate-5">
-            <Heading size="4" mb="4">Stream Settings</Heading>
+        <Flex direction={{ initial: "column", md: "row" }} className="w-full h-screen mesh-gradient overflow-hidden">
+          {/* Left Sidebar: Settings */}
+          <Box 
+            className="w-full md:w-[320px] lg:w-[380px] p-6 border-b md:border-b-0 md:border-r border-white/5 overflow-y-auto order-2 md:order-1"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.02)" }}
+          >
+            <Box mb="6">
+              <Flex align="center" gap="2" mb="1">
+                <Box className="w-2 h-6 bg-gradient-to-b from-violet-500 to-indigo-500 rounded-full glow-violet" />
+                <Heading size="6" className="tracking-tighter text-white font-black uppercase italic">
+                  SAINT <span className="text-violet-9 text-glow">STUDIO</span>
+                </Heading>
+              </Flex>
+              <RadixText size="1" color="gray" className="opacity-50 tracking-widest uppercase font-bold ml-4">
+                Control Center v2.0
+              </RadixText>
+            </Box>
 
-            {!ingressData ? (
-              <Button onClick={generateIngress} disabled={isGenerating}>
-                {isGenerating ? "Generating..." : "Get OBS Stream Key"}
-              </Button>
-            ) : (
-              /* 4. Display the results for the user to copy */
-              <Card variant="surface">
-                <Flex direction="column" gap="2">
-                  <RadixText size="2" weight="bold">OBS Server URL:</RadixText>
-                  <TextField.Root>
-                    <input className="rt-TextFieldInput" value={ingressData.url} readOnly />
-                  </TextField.Root>
-                  <Button
-                    variant="ghost"
-                    size="1"
-                    onClick={() => handleCopy(ingressData.url, "url")}
-                  >
-                    {copiedField === "url" ? <CheckIcon /> : <CopyIcon />}
-                  </Button>
-
-                  <RadixText size="2" weight="bold">OBS Stream Key:</RadixText>
-                  <TextField.Root>
-                    <input className="rt-TextFieldInput" value={ingressData.streamKey} readOnly />
-                  </TextField.Root>
-                  <Button
-                    variant="ghost"
-                    size="1"
-                    onClick={() => handleCopy(ingressData.streamKey, "key")}
-                  >
-                    {copiedField === "key" ? <CheckIcon /> : <CopyIcon />}
-                  </Button>
-                  <RadixText size="1" color="gray">Paste these into OBS {'>'} Settings {'>'} Stream {'>'} Custom</RadixText>
+            <Flex direction="column" gap="6">
+              {/* OBS Ingress Section */}
+              <Card variant="surface" className="glass-dark border-white/10 p-4">
+                <Flex direction="column" gap="3">
+                  <RadixText size="2" weight="bold" className="text-gray-11 flex items-center gap-2">
+                    OBS Encoding
+                  </RadixText>
+                  {!ingressData ? (
+                    <Button 
+                      onClick={generateIngress} 
+                      disabled={isGenerating}
+                      variant="classic"
+                      color="violet"
+                      size="3"
+                      className="w-full shadow-lg"
+                    >
+                      {isGenerating ? "Generating Keys..." : "Get OBS Stream Key"}
+                    </Button>
+                  ) : (
+                    <Flex direction="column" gap="4">
+                      <Box>
+                        <RadixText size="1" weight="bold" color="gray" mb="1" as="div">SERVER URL</RadixText>
+                        <Flex gap="2">
+                          <TextField.Root className="flex-1">
+                            <input className="rt-TextFieldInput text-xs" value={ingressData.url} readOnly />
+                          </TextField.Root>
+                          <IconButton variant="ghost" onClick={() => handleCopy(ingressData.url, "url")}>
+                            {copiedField === "url" ? <CheckIcon /> : <CopyIcon />}
+                          </IconButton>
+                        </Flex>
+                      </Box>
+                      <Box>
+                        <RadixText size="1" weight="bold" color="gray" mb="1" as="div">STREAM KEY</RadixText>
+                        <Flex gap="2">
+                          <TextField.Root className="flex-1">
+                            <input className="rt-TextFieldInput text-xs" value={ingressData.streamKey} readOnly />
+                          </TextField.Root>
+                          <IconButton variant="ghost" onClick={() => handleCopy(ingressData.streamKey, "key")}>
+                            {copiedField === "key" ? <CheckIcon /> : <CopyIcon />}
+                          </IconButton>
+                        </Flex>
+                      </Box>
+                    </Flex>
+                  )}
                 </Flex>
               </Card>
-            )}
 
-            <Flex direction="column" gap="4">
-              <Box>
-                <RadixText size="2" weight="bold" mb="1" as="div">YouTube Stream Key</RadixText>
-                <TextField.Root>
-                  <input
-                    className="rt-TextFieldInput"
-                    placeholder="paste-key-here"
-                    value={ytKey}
-                    onChange={(e) => setYtKey(e.target.value)}
-                  />
-                </TextField.Root>
-              </Box>
+              {/* Social Restreaming Section */}
+              <Card variant="surface" className="glass-dark border-white/10 p-4">
+                <Flex direction="column" gap="4">
+                  <RadixText size="2" weight="bold" className="text-gray-11">
+                    Multi-Stream
+                  </RadixText>
+                  
+                  <Box>
+                    <RadixText size="1" weight="bold" color="gray" mb="1" as="div">YOUTUBE KEY</RadixText>
+                    <TextField.Root>
+                      <input
+                        className="rt-TextFieldInput"
+                        placeholder="rtmp-key-here"
+                        value={ytKey}
+                        onChange={(e) => setYtKey(e.target.value)}
+                      />
+                    </TextField.Root>
+                  </Box>
 
-              <Box>
-                <RadixText size="2" weight="bold" mb="1" as="div">TikTok Stream Key</RadixText>
-                <TextField.Root>
-                  <input
-                    className="rt-TextFieldInput"
-                    placeholder="paste-key-here"
-                    value={ttKey}
-                    onChange={(e) => setTtKey(e.target.value)}
-                  />
-                </TextField.Root>
-              </Box>
+                  <Box>
+                    <RadixText size="1" weight="bold" color="gray" mb="1" as="div">TIKTOK KEY</RadixText>
+                    <TextField.Root>
+                      <input
+                        className="rt-TextFieldInput"
+                        placeholder="rtmp-key-here"
+                        value={ttKey}
+                        onChange={(e) => setTtKey(e.target.value)}
+                      />
+                    </TextField.Root>
+                  </Box>
 
-              <Button
-                color={isStreaming ? "gray" : "red"}
-                variant="solid"
-                size="3"
-                onClick={isStreaming ? stopRestream : startRestream}
-              >
-                {isStreaming ? "Stop Social Stream" : "Go Live on Socials"}
-              </Button>
+                  <Button
+                    color={isStreaming ? "gray" : "red"}
+                    variant="solid"
+                    size="3"
+                    className="w-full shadow-lg"
+                    onClick={isStreaming ? stopRestream : startRestream}
+                  >
+                    {isStreaming ? "Stop Broadcast" : "Go Live on Socials"}
+                  </Button>
+                </Flex>
+              </Card>
             </Flex>
           </Box>
 
-          <Flex direction="column" className="flex-1">
-              <Box className="flex-1 bg-gray-1">
-                <StreamPlayer isHost obsMode />
-              </Box>
-            <ReactionBar />
+          {/* Center: Stream Player */}
+          <Flex direction="column" className="flex-1 relative order-1 md:order-2">
+            <Box className="flex-1 bg-black overflow-hidden">
+              <StreamPlayer isHost obsMode />
+            </Box>
+
           </Flex>
 
-          <Box className="bg-accent-2 min-w-[280px] border-l border-accent-5 hidden sm:block">
+          {/* Right Sidebar: Chat */}
+          <Box 
+            className="w-full md:w-[320px] lg:w-[350px] border-l border-white/5 hidden md:block order-3"
+            style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          >
             <Chat />
           </Box>
         </Flex>

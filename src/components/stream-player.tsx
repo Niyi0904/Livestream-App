@@ -47,7 +47,15 @@ function ConfettiCanvas() {
   return <canvas ref={canvasEl} className="absolute h-full w-full" />;
 }
 
-export function StreamPlayer({ isHost = false, obsMode = false }) {
+export function StreamPlayer({
+  isHost = false,
+  obsMode = false,
+  onlyShowIngress = false,
+}: {
+  isHost: boolean;
+  obsMode?: boolean;
+  onlyShowIngress?: boolean;
+}) {
   const [_, copy] = useCopyToClipboard();
 
   const [localVideoTrack, setLocalVideoTrack] = useState<LocalVideoTrack>();
@@ -133,6 +141,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
 
   // When OBS is live, only show OBS. When not live, show camera participants.
   const obsIsLive = obsIngressTracks.length > 0;
+  const isLive = obsIsLive || (isHost && Boolean(localVideoTrack));
 
   // Browser-based remote participants (Camera source only)
   const remoteVideoTracks = allRemoteVideoTracks.filter(
@@ -160,6 +169,35 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
 
   return (
     <div className="relative h-full w-full bg-black">
+      {/* Status Badges Overlay */}
+      <div className="absolute top-6 left-6 z-20 flex flex-col gap-3 pointer-events-none">
+        <Flex gap="2">
+          {isLive ? (
+            <Badge color="red" variant="solid" className="pulse-red uppercase px-3 py-1.5 shadow-lg rounded-full font-black tracking-widest text-[10px] border border-red-500/20">
+              ● Live
+            </Badge>
+          ) : (
+            <Badge color="gray" variant="surface" className="uppercase px-3 py-1.5 glass-dark text-white/70 rounded-full font-bold tracking-widest text-[10px]">
+              Offline
+            </Badge>
+          )}
+          <div className="glass-dark px-3 py-1.5 rounded-full flex items-center gap-2 shadow-xl border border-white/5">
+            <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
+            <Text size="1" weight="bold" className="text-white/90 tabular-nums">
+              {participants.length} Viewing
+            </Text>
+          </div>
+        </Flex>
+        
+        {/* Branding Watermark */}
+        <div className="flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500">
+          <div className="w-8 h-px bg-gradient-to-r from-violet-500 to-transparent" />
+          <Text size="1" weight="bold" className="uppercase tracking-[0.2em] text-white/50 text-[10px]">
+            Saint Community
+          </Text>
+        </div>
+      </div>
+
       <Grid className="w-full h-full absolute" gap="2">
         {/* Permission Error Message */}
         {permissionError && (
@@ -223,8 +261,8 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
           </div>
         )}
 
-        {/* Remote browser participants — only when OBS is NOT live */}
-        {!obsIsLive && remoteVideoTracks.map((t) => (
+        {/* Remote browser participants — only when OBS is NOT live and not onlyShowIngress */}
+        {!onlyShowIngress && !obsIsLive && remoteVideoTracks.map((t) => (
           <div key={t.participant.identity} className="relative">
             <Flex
               className="absolute w-full h-full"
@@ -261,73 +299,51 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
         label="Click to allow audio playback"
         className="absolute top-0 h-full w-full bg-gray-2-translucent text-white"
       />
-      <div className="absolute top-0 w-full p-2">
-        <Flex justify="between" align="end">
-          <Flex gap="2" justify="center" align="center">
-            <Button
-              size="1"
-              variant="soft"
-              disabled={!Boolean(roomName)}
-              onClick={() =>
-                copy(`${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/watch/${roomName}`)
-              }
-            >
-              {roomState === ConnectionState.Connected ? (
-                <>
-                  {roomName} <CopyIcon />
-                </>
-              ) : (
-                "Loading..."
-              )}
-            </Button>
-            {roomName && canHost && (
-              <Flex gap="2">
-                <MediaDeviceSettings />
-                {roomMetadata?.creator_identity !==
-                  localParticipant?.identity && (
-                    <Button size="1" onClick={onLeaveStage}>
-                      Leave stage
-                    </Button>
-                  )}
-              </Flex>
-            )}
-          </Flex>
-          <Flex gap="2">
-            {roomState === ConnectionState.Connected && (
-              <Flex gap="1" align="center">
-                <div className="rounded-6 bg-red-9 w-2 h-2 animate-pulse" />
-                <Text size="1" className="uppercase text-accent-11">
-                  Live
-                </Text>
-              </Flex>
-            )}
+      {/* Premium Floating Controls Overlay */}
+      {!obsMode && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <Flex gap="4" align="center" className="glass-dark p-2.5 px-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,1)] border border-white/10 glow-violet animate-in fade-in slide-in-from-bottom-4 duration-700">
             <PresenceDialog isHost={isHost}>
-              <div className="relative">
+              <div className="relative cursor-pointer group">
+                <div className="absolute -inset-2 bg-violet-500/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
                 {showNotification && (
-                  <div className="absolute flex h-3 w-3 -top-1 -right-1">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-6 bg-accent-11 opacity-75"></span>
-                    <span className="relative inline-flex rounded-6 h-3 w-3 bg-accent-11"></span>
+                  <div className="absolute flex h-2.5 w-2.5 -top-1 -right-1">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]"></span>
                   </div>
                 )}
-                <Button
-                  size="1"
-                  variant="soft"
-                  disabled={roomState !== ConnectionState.Connected}
-                >
-                  {roomState === ConnectionState.Connected ? (
-                    <EyeOpenIcon />
-                  ) : (
-                    <EyeClosedIcon />
-                  )}
-                  {roomState === ConnectionState.Connected
-                    ? participants.length
-                    : ""}
-                </Button>
+                <Flex align="center" gap="2" className="text-white relative px-2 transition-transform group-hover:scale-110">
+                  <EyeOpenIcon className="w-4 h-4 opacity-70" />
+                  <Text size="2" weight="bold" className="tabular-nums">{participants.length}</Text>
+                </Flex>
               </div>
             </PresenceDialog>
+            
+            <div className="w-px h-6 bg-white/10" />
+
+            <Flex gap="3">
+              <MediaDeviceSettings />
+              {roomMetadata?.creator_identity !== localParticipant?.identity && (
+                <Button size="2" variant="surface" color="violet" onClick={onLeaveStage} className="rounded-xl font-bold px-4">
+                  Leave Stage
+                </Button>
+              )}
+              <Button
+                size="2"
+                variant="soft"
+                color="gray"
+                disabled={!Boolean(roomName)}
+                className="rounded-xl text-white hover:bg-white/20 transition-all active:scale-90"
+                onClick={() =>
+                  copy(`${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/watch/${roomName}`)
+                }
+              >
+                <CopyIcon className="w-4 h-4" />
+              </Button>
+            </Flex>
           </Flex>
-        </Flex>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

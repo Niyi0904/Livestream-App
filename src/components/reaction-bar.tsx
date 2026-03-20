@@ -19,33 +19,33 @@ export function ReactionBar() {
 
   return (
     <Flex
-      gap="2"
+      gap="4"
       justify="center"
       align="center"
-      className="border-t border-accent-5 bg-accent-3 h-[100px] text-center"
+      className="glass-dark border border-white/10 rounded-[24px] px-8 h-[76px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-2xl glow-violet"
     >
       <Tooltip content="Fire" delayDuration={0}>
-        <Button size="4" variant="outline" onClick={() => onSend("🔥")}>
+        <Button size="4" variant="ghost" onClick={() => onSend("🔥")} className="hover:bg-orange-500/20 rounded-xl text-2xl transition-all hover:scale-150 active:scale-90 duration-300">
           🔥
         </Button>
       </Tooltip>
       <Tooltip content="Applause">
-        <Button size="4" variant="outline" onClick={() => onSend("👏")}>
+        <Button size="4" variant="ghost" onClick={() => onSend("👏")} className="hover:bg-yellow-500/20 rounded-xl text-2xl transition-all hover:scale-150 active:scale-90 duration-300">
           👏
         </Button>
       </Tooltip>
       <Tooltip content="LOL">
-        <Button size="4" variant="outline" onClick={() => onSend("🤣")}>
+        <Button size="4" variant="ghost" onClick={() => onSend("🤣")} className="hover:bg-green-500/20 rounded-xl text-2xl transition-all hover:scale-150 active:scale-90 duration-300">
           🤣
         </Button>
       </Tooltip>
       <Tooltip content="Love">
-        <Button size="4" variant="outline" onClick={() => onSend("❤️")}>
+        <Button size="4" variant="ghost" onClick={() => onSend("❤️")} className="hover:bg-red-500/20 rounded-xl text-2xl transition-all hover:scale-150 active:scale-90 duration-300">
           ❤️
         </Button>
       </Tooltip>
       <Tooltip content="Confetti">
-        <Button size="4" variant="outline" onClick={() => onSend("🎉")}>
+        <Button size="4" variant="ghost" onClick={() => onSend("🎉")} className="hover:bg-violet-500/20 rounded-xl text-2xl transition-all hover:scale-150 active:scale-90 duration-300">
           🎉
         </Button>
       </Tooltip>

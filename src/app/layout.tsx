@@ -1,3 +1,4 @@
+import "@radix-ui/themes/styles.css";
 import "@/styles/globals.css";
 
 import { Theme } from "@radix-ui/themes";
@@ -21,9 +22,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <Theme
           appearance="dark"
-          accentColor="purple"
+          accentColor="violet"
           grayColor="mauve"
-          radius="none"
+          radius="large"
+          scaling="100%"
         >
           {children}
         </Theme>
