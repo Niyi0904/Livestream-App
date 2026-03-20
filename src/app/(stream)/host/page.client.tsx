@@ -34,6 +34,18 @@ export default function HostPage({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
+  // Auto-hide controls in landscape mode
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (isLandscape && showControls) {
+      timeout = setTimeout(() => {
+        setShowControls(false);
+      }, 30000); // 30 seconds
+    }
+    return () => clearTimeout(timeout);
+  }, [isLandscape, showControls]);
 
 
 
@@ -252,13 +264,17 @@ export default function HostPage({
           {/* Center: Stream Player */}
           <Flex 
             direction="column" 
+            onClick={() => isLandscape && setShowControls(true)}
             className={cn(
               "flex-1 relative order-1 md:order-2 transition-all duration-300",
               isLandscape && "fixed inset-0 z-[60] bg-black md:relative md:inset-auto md:z-auto"
             )}
           >
             {/* Mobile Toggle Buttons */}
-            <Box className="absolute top-6 left-6 right-6 flex justify-between z-40 md:hidden">
+            <Box className={cn(
+              "absolute top-6 left-6 right-6 flex justify-between z-40 md:hidden transition-all duration-500",
+              isLandscape && !showControls ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100 translate-y-0"
+            )}>
               <Button
                 size="3"
                 variant="soft"
@@ -281,13 +297,20 @@ export default function HostPage({
             </Box>
 
             {/* Landscape Toggle Button (Mobile Only) */}
-            <Box className="absolute bottom-6 right-6 z-40 md:hidden">
+            <Box className={cn(
+              "absolute bottom-6 right-6 z-40 md:hidden transition-all duration-500",
+              isLandscape && !showControls ? "opacity-0 translate-y-4 pointer-events-none" : "opacity-100 translate-y-0"
+            )}>
               <Button
                 size="3"
                 variant="solid"
                 color="violet"
                 className="rounded-full px-4 glass border-white/10 shadow-xl font-bold uppercase tracking-wider text-[10px]"
-                onClick={() => setIsLandscape(!isLandscape)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLandscape(!isLandscape);
+                  setShowControls(true);
+                }}
               >
                 {isLandscape ? "Exit Landscape" : "Landscape Mode"}
               </Button>
