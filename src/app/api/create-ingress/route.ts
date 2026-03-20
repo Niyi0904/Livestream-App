@@ -16,10 +16,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    const roomName = body.roomName;
+
+    // Check for existing ingress for this room to avoid 429/limits
+    const existingIngresses = await ingressClient.listIngress({ roomName });
+    if (existingIngresses.length > 0) {
+      const ingress = existingIngresses[0];
+      return NextResponse.json({ url: ingress.url, streamKey: ingress.streamKey });
+    }
 
     const ingress = await ingressClient.createIngress(IngressInput.RTMP_INPUT, {
       name: "OBS Stream",
-      roomName: body.roomName,
+      roomName: roomName,
       participantIdentity: "obs-streamer",
       participantName: "OBS Broadcaster",
       video: {

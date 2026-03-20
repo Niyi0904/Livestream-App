@@ -47,9 +47,13 @@ export default function HostPage({
         body: JSON.stringify({ roomName }), // Pass the current room name
       });
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate ingress");
+      }
       setIngressData(data); // Save the URL and Key
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate ingress:", error);
+      alert(`Error generating ingress: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
