@@ -28,11 +28,24 @@ function ParticipantListItem({
   isHost?: boolean;
 }) {
   const authToken = useAuthToken();
-  const participantMetadata = (participant.metadata &&
-    JSON.parse(participant.metadata)) as ParticipantMetadata;
+  const participantMetadata = (() => {
+    try {
+      return participant.metadata
+        ? (JSON.parse(participant.metadata) as ParticipantMetadata)
+        : { hand_raised: false, invited_to_stage: false, avatar_image: "" };
+    } catch {
+      return { hand_raised: false, invited_to_stage: false, avatar_image: "" };
+    }
+  })();
+
   const room = useRoomContext();
-  const roomMetadata = (room.metadata &&
-    JSON.parse(room.metadata)) as RoomMetadata;
+  const roomMetadata = (() => {
+    try {
+      return room.metadata ? (JSON.parse(room.metadata) as RoomMetadata) : { allow_participation: false, creator_identity: "", enable_chat: true };
+    } catch {
+      return { allow_participation: false, creator_identity: "", enable_chat: true };
+    }
+  })();
 
   const onInvite = async () => {
     // TODO: optimistic update
@@ -76,15 +89,15 @@ function ParticipantListItem({
   function HostActions() {
     if (!isCurrentUser) {
       if (
-        participantMetadata.invited_to_stage &&
-        participantMetadata.hand_raised
+        participantMetadata?.invited_to_stage &&
+        participantMetadata?.hand_raised
       ) {
         return (
           <Button size="1" variant="outline" onClick={onCancel}>
             Remove
           </Button>
         );
-      } else if (participantMetadata.hand_raised) {
+      } else if (participantMetadata?.hand_raised) {
         return (
           <Flex gap="2">
             <Button size="1" onClick={onInvite}>
@@ -95,13 +108,13 @@ function ParticipantListItem({
             </Button>
           </Flex>
         );
-      } else if (participantMetadata.invited_to_stage) {
+      } else if (participantMetadata?.invited_to_stage) {
         return (
           <Button size="1" variant="outline" disabled>
             Pending
           </Button>
         );
-      } else if (!participantMetadata.invited_to_stage) {
+      } else if (!participantMetadata?.invited_to_stage) {
         return (
           <Button size="1" onClick={onInvite}>
             Invite to stage
@@ -114,8 +127,8 @@ function ParticipantListItem({
   function ViewerActions() {
     if (isCurrentUser) {
       if (
-        participantMetadata.invited_to_stage &&
-        participantMetadata.hand_raised
+        participantMetadata?.invited_to_stage &&
+        participantMetadata?.hand_raised
       ) {
         return (
           <Button size="1" onClick={onCancel}>
@@ -123,8 +136,8 @@ function ParticipantListItem({
           </Button>
         );
       } else if (
-        participantMetadata.invited_to_stage &&
-        !participantMetadata.hand_raised
+        participantMetadata?.invited_to_stage &&
+        !participantMetadata?.hand_raised
       ) {
         return (
           <Flex gap="2">
@@ -137,8 +150,8 @@ function ParticipantListItem({
           </Flex>
         );
       } else if (
-        !participantMetadata.invited_to_stage &&
-        participantMetadata.hand_raised
+        !participantMetadata?.invited_to_stage &&
+        participantMetadata?.hand_raised
       ) {
         return (
           <Button size="1" variant="outline" onClick={onCancel}>
@@ -146,8 +159,8 @@ function ParticipantListItem({
           </Button>
         );
       } else if (
-        !participantMetadata.invited_to_stage &&
-        !participantMetadata.hand_raised
+        !participantMetadata?.invited_to_stage &&
+        !participantMetadata?.hand_raised
       ) {
         return (
           <Button size="1" onClick={onRaiseHand}>
@@ -193,7 +206,7 @@ export function PresenceDialog({
     (participant) => participant.permissions?.canPublish ?? false
   );
   const viewers = participants.filter(
-    (participant) => !participant.permissions?.canPublish ?? true
+    (participant) => !participant.permissions?.canPublish
   );
 
   return (

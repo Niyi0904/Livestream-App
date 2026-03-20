@@ -51,9 +51,15 @@ export function Chat() {
   const { chatMessages, send } = useChat();
   const { metadata } = useRoomInfo();
 
-  const { enable_chat: chatEnabled } = (
-    metadata ? JSON.parse(metadata) : {}
-  ) as RoomMetadata;
+  const chatEnabled = useMemo(() => {
+    try {
+      if (!metadata) return true;
+      const parsed = JSON.parse(metadata) as RoomMetadata;
+      return parsed.enable_chat ?? true;
+    } catch {
+      return true;
+    }
+  }, [metadata]);
 
   // HACK: why do we get duplicate messages?
   const messages = useMemo(() => {
@@ -92,20 +98,23 @@ export function Chat() {
       <Box>
         <Flex gap="2" py="2" px="4" mt="4" className="border-t border-accent-5">
           <Box className="flex-1">
-            <TextField.Root
-              disabled={!chatEnabled}
-              placeholder={
-                chatEnabled ? "Say something..." : "Chat is disabled"
-              }
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyUp={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  onSend();
+            <TextField.Root>
+              <input
+                className="rt-TextFieldInput"
+                disabled={!chatEnabled}
+                placeholder={
+                  chatEnabled ? "Say something..." : "Chat is disabled"
                 }
-              }}
-            />
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyUp={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onSend();
+                  }
+                }}
+              />
+            </TextField.Root>
           </Box>
           <IconButton onClick={onSend} disabled={!draft.trim().length}>
             <PaperPlaneIcon />

@@ -54,17 +54,36 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
   const localVideoEl = useRef<HTMLVideoElement>(null);
 
   const { metadata, name: roomName, state: roomState } = useRoomContext();
-  const roomMetadata = (metadata && JSON.parse(metadata)) as RoomMetadata;
+  const roomMetadata = (() => {
+    try {
+      return metadata ? (JSON.parse(metadata) as RoomMetadata) : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+
   const { localParticipant } = useLocalParticipant();
-  const localMetadata = (localParticipant.metadata &&
-    JSON.parse(localParticipant.metadata)) as ParticipantMetadata;
+  const localMetadata = (() => {
+    try {
+      return localParticipant.metadata
+        ? (JSON.parse(localParticipant.metadata) as ParticipantMetadata)
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
   const canHost =
     isHost || (localMetadata?.invited_to_stage && localMetadata?.hand_raised);
   const participants = useParticipants();
   const showNotification = isHost
     ? participants.some((p) => {
-      const metadata = (p.metadata &&
-        JSON.parse(p.metadata)) as ParticipantMetadata;
+      const metadata = (() => {
+        try {
+          return p.metadata ? (JSON.parse(p.metadata) as ParticipantMetadata) : undefined;
+        } catch {
+          return undefined;
+        }
+      })();
       return metadata?.hand_raised && !metadata?.invited_to_stage;
     })
     : localMetadata?.invited_to_stage && !localMetadata?.hand_raised;
