@@ -13,6 +13,7 @@ export async function getParticipantToken(
   const apiSecret = process.env.LIVEKIT_API_SECRET;
 
   if (!apiKey || !apiSecret) {
+    console.error('LIVEKIT_API_KEY or LIVEKIT_API_SECRET is not set', { apiKey: !!apiKey, apiSecret: !!apiSecret });
     throw new Error('LIVEKIT_API_KEY or LIVEKIT_API_SECRET is not set');
   }
 

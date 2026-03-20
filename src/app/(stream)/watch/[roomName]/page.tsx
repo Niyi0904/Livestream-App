@@ -19,7 +19,11 @@ export default async function WatchPage({ params }: PageProps) {
 
   const token = await getParticipantToken(roomName, viewerId, false);
 
-  const serverUrl = process.env.LIVEKIT_URL!;
+  const serverUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
+  if (!serverUrl) {
+    console.error('LIVEKIT_URL is not set');
+    throw new Error('LIVEKIT_URL is not set');
+  }
 
   return <WatchPageImpl roomName={roomName} roomToken={token} serverUrl={serverUrl} />;
 }

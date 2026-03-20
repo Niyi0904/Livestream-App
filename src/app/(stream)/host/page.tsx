@@ -17,7 +17,11 @@ export default async function HostPage({ searchParams }: PageProps) {
     redirect("/");
   }
   const token = await getParticipantToken(roomName, "host-user", true);
-  const serverUrl = process.env.LIVEKIT_URL!;
+  const serverUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
+  if (!serverUrl) {
+    console.error('LIVEKIT_URL is not set');
+    throw new Error('LIVEKIT_URL is not set');
+  }
 
   // 3. Pass the generated token to the client
   return <HostPageImpl authToken={at} roomToken={token} serverUrl={serverUrl} roomName={roomName} />;

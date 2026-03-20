@@ -238,7 +238,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
               variant="soft"
               disabled={!Boolean(roomName)}
               onClick={() =>
-                copy(`${process.env.NEXT_PUBLIC_SITE_URL}/watch/${roomName}`)
+                copy(`${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/watch/${roomName}`)
               }
             >
               {roomState === ConnectionState.Connected ? (

@@ -106,9 +106,17 @@ export class Controller {
   private roomService: RoomServiceClient;
 
   constructor() {
-    const httpUrl = process.env
-      .LIVEKIT_WS_URL!.replace("wss://", "https://")
-      .replace("ws://", "http://");
+    const wsUrl = process.env.LIVEKIT_WS_URL || process.env.LIVEKIT_URL;
+    if (!wsUrl) {
+      throw new Error("LIVEKIT_URL or LIVEKIT_WS_URL is not set");
+    }
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+    if (!apiKey || !apiSecret) {
+    console.error('LIVEKIT_API_KEY or LIVEKIT_API_SECRET is not set', { apiKey: !!apiKey, apiSecret: !!apiSecret });
+    throw new Error('LIVEKIT_API_KEY or LIVEKIT_API_SECRET is not set');
+  }
+    const httpUrl = wsUrl.replace("wss://", "https://").replace("ws://", "http://");
     this.ingressService = new IngressClient(httpUrl);
     this.roomService = new RoomServiceClient(
       httpUrl,
