@@ -4,10 +4,11 @@ import { Chat } from "@/components/chat";
 import { ReactionBar } from "@/components/reaction-bar";
 import { StreamPlayer } from "@/components/stream-player";
 import { TokenContext } from "@/components/token-context";
+import { cn } from "@/lib/utils";
 import { LiveKitRoom } from "@livekit/components-react";
 import { Box, Flex, Button, Heading, TextField, Text as RadixText, Card, IconButton } from "@radix-ui/themes";
 import { useState } from "react";
-import { CopyIcon, CheckIcon } from "@radix-ui/react-icons"; // Icons for the button
+import { CopyIcon, CheckIcon, ChatBubbleIcon, Cross1Icon } from "@radix-ui/react-icons"; // Icons for the button
 
 
 export default function HostPage({
@@ -30,6 +31,10 @@ export default function HostPage({
   const [ingressData, setIngressData] = useState<{ url: string; streamKey: string } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+
 
 
   const handleCopy = async (text: string, field: string) => {
@@ -122,20 +127,32 @@ export default function HostPage({
     <TokenContext.Provider value={authToken}>
       <LiveKitRoom serverUrl={serverUrl} token={roomToken} connect={true} audio={false} video={false}>
         <Flex direction={{ initial: "column", md: "row" }} className="w-full h-screen mesh-gradient overflow-hidden">
-          {/* Left Sidebar: Settings */}
-          <Box 
-            className="w-full md:w-[320px] lg:w-[380px] p-6 border-b md:border-b-0 md:border-r border-white/5 overflow-y-auto order-2 md:order-1"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.02)" }}
+          {/* Left Sidebar: Settings (Mobile Left Drawer) */}
+          <Box
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 w-full max-w-[320px] lg:max-w-[380px] transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:order-1 border-r border-white/5 overflow-y-auto",
+              isSettingsOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
           >
+            {/* Mobile Close Button inside Drawer */}
+            <Box className="p-4 flex justify-between items-center border-b border-white/5 md:hidden">
+              <RadixText weight="bold" size="2" className="tracking-widest uppercase opacity-50">Studio Settings</RadixText>
+              <Button variant="ghost" color="gray" onClick={() => setIsSettingsOpen(false)}>
+                <Cross1Icon />
+              </Button>
+            </Box>
+
+            <Box className="p-6">
             <Box mb="6">
               <Flex align="center" gap="2" mb="1">
                 <Box className="w-2 h-6 bg-gradient-to-b from-violet-500 to-indigo-500 rounded-full glow-violet" />
-                <Heading size="6" className="tracking-tighter text-white font-black uppercase italic">
-                  SAINT <span className="text-violet-9 text-glow">STUDIO</span>
+                <Heading size="2" className="tracking-tighter text-white font-black uppercase italic">
+                  SAINT COMMUNITY CHURCH <span className="text-violet-9 text-glow">STUDIO</span>
                 </Heading>
               </Flex>
               <RadixText size="1" color="gray" className="opacity-50 tracking-widest uppercase font-bold ml-4">
-                Control Center v2.0
+                Control Center v1.0
               </RadixText>
             </Box>
 
@@ -147,8 +164,8 @@ export default function HostPage({
                     OBS Encoding
                   </RadixText>
                   {!ingressData ? (
-                    <Button 
-                      onClick={generateIngress} 
+                    <Button
+                      onClick={generateIngress}
                       disabled={isGenerating}
                       variant="classic"
                       color="violet"
@@ -192,7 +209,7 @@ export default function HostPage({
                   <RadixText size="2" weight="bold" className="text-gray-11">
                     Multi-Stream
                   </RadixText>
-                  
+
                   <Box>
                     <RadixText size="1" weight="bold" color="gray" mb="1" as="div">YOUTUBE KEY</RadixText>
                     <TextField.Root>
@@ -230,22 +247,88 @@ export default function HostPage({
               </Card>
             </Flex>
           </Box>
+        </Box>
 
           {/* Center: Stream Player */}
-          <Flex direction="column" className="flex-1 relative order-1 md:order-2">
-            <Box className="flex-1 bg-black overflow-hidden">
-              <StreamPlayer isHost obsMode />
+          <Flex 
+            direction="column" 
+            className={cn(
+              "flex-1 relative order-1 md:order-2 transition-all duration-300",
+              isLandscape && "fixed inset-0 z-[60] bg-black md:relative md:inset-auto md:z-auto"
+            )}
+          >
+            {/* Mobile Toggle Buttons */}
+            <Box className="absolute top-6 left-6 right-6 flex justify-between z-40 md:hidden">
+              <Button
+                size="3"
+                variant="soft"
+                color="violet"
+                className="rounded-full w-12 h-12 glass border-white/10 shadow-xl"
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              >
+                {isSettingsOpen ? <Cross1Icon /> : <CopyIcon />}
+              </Button>
+
+              <Button
+                size="3"
+                variant="soft"
+                color="violet"
+                className="rounded-full w-12 h-12 glass border-white/10 shadow-xl"
+                onClick={() => setIsChatOpen(!isChatOpen)}
+              >
+                {isChatOpen ? <Cross1Icon /> : <ChatBubbleIcon />}
+              </Button>
             </Box>
 
+            {/* Landscape Toggle Button (Mobile Only) */}
+            <Box className="absolute bottom-6 right-6 z-40 md:hidden">
+              <Button
+                size="3"
+                variant="solid"
+                color="violet"
+                className="rounded-full px-4 glass border-white/10 shadow-xl font-bold uppercase tracking-wider text-[10px]"
+                onClick={() => setIsLandscape(!isLandscape)}
+              >
+                {isLandscape ? "Exit Landscape" : "Landscape Mode"}
+              </Button>
+            </Box>
+
+            <Box className={cn(
+              "flex-1 bg-black overflow-hidden relative transition-all duration-300",
+              isLandscape ? "h-screen w-screen" : "h-full"
+            )}>
+              <StreamPlayer isHost obsMode />
+            </Box>
           </Flex>
 
-          {/* Right Sidebar: Chat */}
-          <Box 
-            className="w-full md:w-[320px] lg:w-[350px] border-l border-white/5 hidden md:block order-3"
-            style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          {/* Right Sidebar: Chat (Mobile Right Drawer) */}
+          <Box
+            className={cn(
+              "fixed inset-y-0 right-0 z-50 w-full max-w-[320px] transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:order-3 border-l border-white/5",
+              isChatOpen ? "translate-x-0" : "translate-x-full"
+            )}
+            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
           >
+            {/* Mobile Close Button inside Drawer */}
+            <Box className="p-4 flex justify-between items-center border-b border-white/5 md:hidden">
+              <RadixText weight="bold" size="2" className="tracking-widest uppercase opacity-50">Live Chat</RadixText>
+              <Button variant="ghost" color="gray" onClick={() => setIsChatOpen(false)}>
+                <Cross1Icon />
+              </Button>
+            </Box>
             <Chat />
           </Box>
+
+          {/* Mobile Overlay Background */}
+          {(isChatOpen || isSettingsOpen) && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => {
+                setIsChatOpen(false);
+                setIsSettingsOpen(false);
+              }}
+            />
+          )}
         </Flex>
       </LiveKitRoom>
     </TokenContext.Provider>

@@ -12,7 +12,7 @@ import {
   useTracks,
 } from "@livekit/components-react";
 import { CopyIcon, EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
-import { Avatar, Badge, Button, Flex, Grid, Text } from "@radix-ui/themes";
+import { Avatar, Badge, Box, Button, Flex, Grid, Heading, Text } from "@radix-ui/themes";
 import Confetti from "js-confetti";
 import {
   ConnectionState,
@@ -170,7 +170,7 @@ export function StreamPlayer({
   return (
     <div className="relative h-full w-full bg-black">
       {/* Status Badges Overlay */}
-      <div className="absolute top-6 left-6 z-20 flex flex-col gap-3 pointer-events-none">
+      <div className="absolute top-6 left-6 md:left-6 right-6 md:right-auto z-20 flex flex-col gap-3 pointer-events-none items-end md:items-start">
         <Flex gap="2">
           {isLive ? (
             <Badge color="red" variant="solid" className="pulse-red uppercase px-3 py-1.5 shadow-lg rounded-full font-black tracking-widest text-[10px] border border-red-500/20">
@@ -188,17 +188,37 @@ export function StreamPlayer({
             </Text>
           </div>
         </Flex>
-        
+
         {/* Branding Watermark */}
         <div className="flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500">
           <div className="w-8 h-px bg-gradient-to-r from-violet-500 to-transparent" />
           <Text size="1" weight="bold" className="uppercase tracking-[0.2em] text-white/50 text-[10px]">
-            Saint Community
+            Saint Community Studio
           </Text>
         </div>
       </div>
 
       <Grid className="w-full h-full absolute" gap="2">
+        {/* Offline Placeholder */}
+        {!isLive && (
+          <Flex direction="column" align="center" justify="center" className="absolute inset-0 z-10 p-12 pointer-events-none">
+            <Box className="w-24 h-24 bg-gradient-to-br from-violet-600/20 to-indigo-600/20 rounded-[32px] flex items-center justify-center mb-6 glow-violet animate-pulse border border-white/5">
+              <EyeClosedIcon className="w-10 h-10 text-violet-400 opacity-50" />
+            </Box>
+            <div className="flex flex-col items-center">
+              <Heading size="3" align="center" className="text-white font-black tracking-tighter uppercase italic opacity-20 mb-2">
+                SAINT COMMUNITY CHURCH <span className="text-violet-9">LIVE</span>
+              </Heading>
+              <Text size="2" color="gray" align="center" className="max-w-[240px] opacity-40 font-bold uppercase tracking-widest text-center">
+                Standing by for signal...
+              </Text>
+            </div>
+
+            {/* Decorative background glow behind text */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-violet-600/5 rounded-full blur-[80px] pointer-events-none" />
+          </Flex>
+        )}
+
         {/* Permission Error Message */}
         {permissionError && (
           <Flex
@@ -318,7 +338,7 @@ export function StreamPlayer({
                 </Flex>
               </div>
             </PresenceDialog>
-            
+
             <div className="w-px h-6 bg-white/10" />
 
             <Flex gap="3">

@@ -36,12 +36,11 @@ function ChatMessage({ message }: { message: ReceivedChatMessage }) {
             {message.from?.identity ?? "Unknown"}
           </Text>
         )}
-        <div 
-          className={`px-3 py-2 rounded-2xl text-[13px] shadow-sm ${
-            isMe 
-              ? "bg-violet-9 text-white rounded-tr-none" 
-              : "glass-dark text-white rounded-tl-none border border-white/10"
-          }`}
+        <div
+          className={`px-3 py-2 rounded-2xl text-[13px] shadow-sm ${isMe
+            ? "bg-violet-9 text-white rounded-tr-none"
+            : "glass-dark text-white rounded-tl-none border border-white/10"
+            }`}
         >
           {message.message}
         </div>
@@ -84,12 +83,12 @@ export function Chat() {
 
   return (
     <Flex direction="column" className="h-full bg-transparent">
-      <Box className="p-4 border-b border-white/5 backdrop-blur-sm">
+      <Box className="p-4 border-b border-white/5 hidden md:block backdrop-blur-sm">
         <Text size="2" weight="bold" className="uppercase tracking-widest text-violet-11">
           Live Chat
         </Text>
       </Box>
-      
+
       <Flex
         direction="column"
         className="flex-1 h-full px-4 overflow-y-auto pt-4 pb-2"
@@ -117,10 +116,10 @@ export function Chat() {
               }
             }}
           />
-          <IconButton 
-            variant="ghost" 
+          <IconButton
+            variant="ghost"
             radius="full"
-            onClick={onSend} 
+            onClick={onSend}
             disabled={!draft.trim().length}
             className="text-violet-11 hover:bg-violet-4"
           >
