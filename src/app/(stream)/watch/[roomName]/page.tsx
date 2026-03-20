@@ -2,19 +2,29 @@ import { redirect } from "next/navigation";
 import WatchPageImpl from "./page.client";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     roomName: string;
-  };
+  }>;
 }
 
-export default async function WatchPage({ params: { roomName } }: PageProps) {
+export default async function WatchPage({ params }: PageProps) {
+  const { roomName } = await params;
+
   if (!roomName) {
     redirect("/");
   }
 
-  const serverUrl = process.env
-    .LIVEKIT_WS_URL!.replace("wss://", "https://")
-    .replace("ws://", "http://");
+  const viewerId = `viewer-${Math.floor(Math.random() * 10000)}`;
 
-  return <WatchPageImpl roomName={roomName} serverUrl={serverUrl} />;
+
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const host = process.env.VERCEL_URL || 'localhost:3000';
+
+  const resp = await fetch(`${protocol}://${host}/api/get-participant-token?room=${roomName}&username=${viewerId}&isHost=false`);
+
+  const { token } = await resp.json();
+
+  const serverUrl = process.env.LIVEKIT_URL!;
+
+  return <WatchPageImpl roomName={roomName} roomToken={token} serverUrl={serverUrl} />;
 }

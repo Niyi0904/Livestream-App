@@ -47,7 +47,7 @@ function ConfettiCanvas() {
   return <canvas ref={canvasEl} className="absolute h-full w-full" />;
 }
 
-export function StreamPlayer({ isHost = false }) {
+export function StreamPlayer({ isHost = false, obsMode = false }) {
   const [_, copy] = useCopyToClipboard();
 
   const [localVideoTrack, setLocalVideoTrack] = useState<LocalVideoTrack>();
@@ -63,14 +63,14 @@ export function StreamPlayer({ isHost = false }) {
   const participants = useParticipants();
   const showNotification = isHost
     ? participants.some((p) => {
-        const metadata = (p.metadata &&
-          JSON.parse(p.metadata)) as ParticipantMetadata;
-        return metadata?.hand_raised && !metadata?.invited_to_stage;
-      })
+      const metadata = (p.metadata &&
+        JSON.parse(p.metadata)) as ParticipantMetadata;
+      return metadata?.hand_raised && !metadata?.invited_to_stage;
+    })
     : localMetadata?.invited_to_stage && !localMetadata?.hand_raised;
 
   useEffect(() => {
-    if (canHost) {
+    if (canHost && !obsMode) {
       const createTracks = async () => {
         const tracks = await createLocalTracks({ audio: true, video: true });
         const camTrack = tracks.find((t) => t.kind === Track.Kind.Video);
@@ -81,7 +81,8 @@ export function StreamPlayer({ isHost = false }) {
       };
       void createTracks();
     }
-  }, [canHost]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canHost]); // obsMode is a static prop — safe to omit from deps
 
   const { activeDeviceId: activeCameraDeviceId } = useMediaDeviceSelect({
     kind: "videoinput",
@@ -93,8 +94,22 @@ export function StreamPlayer({ isHost = false }) {
     }
   }, [localVideoTrack, activeCameraDeviceId]);
 
-  const remoteVideoTracks = useTracks([Track.Source.Camera]).filter(
-    (t) => t.participant.identity !== localParticipant.identity
+  // Include Track.Source.Unknown for RTMP ingress tracks (OBS streams arrive as Unknown source)
+  const allRemoteVideoTracks = useTracks(
+    [Track.Source.Camera, Track.Source.Unknown]
+  ).filter((t) => t.participant.identity !== localParticipant.identity);
+
+  // Ingress/OBS tracks come in as Unknown source
+  const obsIngressTracks = allRemoteVideoTracks.filter(
+    (t) => t.source === Track.Source.Unknown
+  );
+
+  // When OBS is live, only show OBS. When not live, show camera participants.
+  const obsIsLive = obsIngressTracks.length > 0;
+
+  // Browser-based remote participants (Camera source only)
+  const remoteVideoTracks = allRemoteVideoTracks.filter(
+    (t) => t.source === Track.Source.Camera
   );
 
   const remoteAudioTracks = useTracks([Track.Source.Microphone]).filter(
@@ -118,7 +133,18 @@ export function StreamPlayer({ isHost = false }) {
   return (
     <div className="relative h-full w-full bg-black">
       <Grid className="w-full h-full absolute" gap="2">
-        {canHost && (
+        {/* OBS/Ingress stream — auto-detected, takes over when active */}
+        {obsIsLive && obsIngressTracks.map((t) => (
+          <div key={`${t.participant.identity}-${t.source}`} className="w-full h-full relative">
+            <VideoTrack
+              trackRef={t}
+              className="absolute w-full h-full object-contain bg-transparent"
+            />
+          </div>
+        ))}
+
+        {/* Local Host camera preview — only when no OBS and not in obsMode */}
+        {!obsIsLive && canHost && !obsMode && (
           <div className="relative">
             <Flex
               className="absolute w-full h-full"
@@ -146,7 +172,9 @@ export function StreamPlayer({ isHost = false }) {
             </div>
           </div>
         )}
-        {remoteVideoTracks.map((t) => (
+
+        {/* Remote browser participants — only when OBS is NOT live */}
+        {!obsIsLive && remoteVideoTracks.map((t) => (
           <div key={t.participant.identity} className="relative">
             <Flex
               className="absolute w-full h-full"
@@ -207,10 +235,10 @@ export function StreamPlayer({ isHost = false }) {
                 <MediaDeviceSettings />
                 {roomMetadata?.creator_identity !==
                   localParticipant.identity && (
-                  <Button size="1" onClick={onLeaveStage}>
-                    Leave stage
-                  </Button>
-                )}
+                    <Button size="1" onClick={onLeaveStage}>
+                      Leave stage
+                    </Button>
+                  )}
               </Flex>
             )}
           </Flex>

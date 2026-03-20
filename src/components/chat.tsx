@@ -92,7 +92,7 @@ export function Chat() {
       <Box>
         <Flex gap="2" py="2" px="4" mt="4" className="border-t border-accent-5">
           <Box className="flex-1">
-            <TextField.Input
+            <TextField.Root
               disabled={!chatEnabled}
               placeholder={
                 chatEnabled ? "Say something..." : "Chat is disabled"
