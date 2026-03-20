@@ -18,13 +18,23 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const roomName = body.roomName;
 
-    // Check for existing ingress for this room to avoid 429/limits
-    const existingIngresses = await ingressClient.listIngress({ roomName });
-    if (existingIngresses.length > 0) {
-      const ingress = existingIngresses[0];
+    // 1. Check for existing ingress specifically for this room
+    const existingForRoom = await ingressClient.listIngress({ roomName });
+    if (existingForRoom.length > 0) {
+      const ingress = existingForRoom[0];
       return NextResponse.json({ url: ingress.url, streamKey: ingress.streamKey });
     }
 
+    // 2. If at limit, or to stay efficient, reuse any UNASSIGNED ingress
+    const allIngresses = await ingressClient.listIngress({});
+    const unassigned = allIngresses.find((i) => !i.roomName || i.roomName === "");
+
+    if (unassigned) {
+      // NOTE: We could update it here if needed, but return its existing info is safer/faster
+      return NextResponse.json({ url: unassigned.url, streamKey: unassigned.streamKey });
+    }
+
+    // 3. Last resort: create a new one
     const ingress = await ingressClient.createIngress(IngressInput.RTMP_INPUT, {
       name: "OBS Stream",
       roomName: roomName,

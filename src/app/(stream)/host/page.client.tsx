@@ -120,7 +120,7 @@ export default function HostPage({
 
   return (
     <TokenContext.Provider value={authToken}>
-      <LiveKitRoom serverUrl={serverUrl} token={roomToken} connect={true}>
+      <LiveKitRoom serverUrl={serverUrl} token={roomToken} connect={true} audio={false} video={false}>
         <Flex className="w-full h-screen">
           <Box className="bg-slate-2 min-w-[300px] p-4 border-r border-slate-5">
             <Heading size="4" mb="4">Stream Settings</Heading>
@@ -198,15 +198,9 @@ export default function HostPage({
           </Box>
 
           <Flex direction="column" className="flex-1">
-            <Box className="flex-1 bg-gray-1">
-              <StreamPlayer isHost obsMode />
-
-              <Box className="absolute top-4 right-4 z-10">
-                <Button color="red" variant="solid" onClick={startRestream}>
-                  Go Live to YouTube
-                </Button>
+              <Box className="flex-1 bg-gray-1">
+                <StreamPlayer isHost obsMode />
               </Box>
-            </Box>
             <ReactionBar />
           </Flex>
 
