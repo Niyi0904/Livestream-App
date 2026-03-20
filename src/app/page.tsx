@@ -21,7 +21,7 @@ export default function Home() {
           <Flex direction="column" align="center" gap="6">
             <Flex direction="column" align="center" gap="2">
               <Heading size="6" align="center" className="tracking-tighter text-white font-black leading-none mt-2">
-                SAINT COMMUNITY STREAMING & RESTREAMING APP
+                RESTRO STREAMING & RESTREAMING APP
               </Heading>
               <Text as="p" align="center" color="gray" size="4" className="max-w-[380px] leading-relaxed opacity-80">
                 Bringing our service to you, wherever you are. Stream live and stay connected to the Word.
@@ -68,7 +68,7 @@ export default function Home() {
       </Container>
 
       <footer className="absolute bottom-8 text-white/20 text-xs font-mono tracking-widest uppercase flex items-center gap-4">
-        <span>© 2026 SAINT COMMUNITY</span>
+        <span>© 2026 RESTRO</span>
         <span className="w-1 h-1 bg-white/20 rounded-full" />
         <span>PRO STREAM ENGINE V2.0</span>
       </footer>

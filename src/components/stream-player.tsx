@@ -195,7 +195,7 @@ export function StreamPlayer({
         <div className="flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-500">
           <div className="w-8 h-px bg-gradient-to-r from-violet-500 to-transparent" />
           <Text size="1" weight="bold" className="uppercase tracking-[0.2em] text-white/50 text-[10px]">
-            Saint Community Studio
+            Restro Studio
           </Text>
         </div>
       </div>
@@ -209,7 +209,7 @@ export function StreamPlayer({
             </Box>
             <div className="flex flex-col items-center">
               <Heading size="3" align="center" className="text-white font-black tracking-tighter uppercase italic opacity-20 mb-2">
-                SAINT COMMUNITY CHURCH <span className="text-violet-9">LIVE</span>
+                RESTRO <span className="text-violet-9">LIVE</span>
               </Heading>
               <Text size="2" color="gray" align="center" className="max-w-[240px] opacity-40 font-bold uppercase tracking-widest text-center">
                 Standing by for signal...
