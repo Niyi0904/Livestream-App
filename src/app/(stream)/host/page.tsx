@@ -1,3 +1,4 @@
+import { getParticipantToken } from "@/lib/livekit";
 import { redirect } from "next/navigation";
 import HostPageImpl from "./page.client";
 
@@ -15,18 +16,7 @@ export default async function HostPage({ searchParams }: PageProps) {
   if (!at || !roomName) {
     redirect("/");
   }
-
-  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-  const host = process.env.VERCEL_URL || 'localhost:3000';
-  const baseUrl = `${protocol}://${host}`;
-
-  const resp = await fetch(
-    `${baseUrl}/api/get-participant-token?room=${roomName}&username=host-user&isHost=true`,
-    { cache: 'no-store' }
-  );
-
-  const { token } = await resp.json();
-
+  const token = await getParticipantToken(roomName, "host-user", true);
   const serverUrl = process.env.LIVEKIT_URL!;
 
   // 3. Pass the generated token to the client

@@ -1,3 +1,4 @@
+import { getParticipantToken } from "@/lib/livekit";
 import { redirect } from "next/navigation";
 import WatchPageImpl from "./page.client";
 
@@ -16,13 +17,7 @@ export default async function WatchPage({ params }: PageProps) {
 
   const viewerId = `viewer-${Math.floor(Math.random() * 10000)}`;
 
-
-  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-  const host = process.env.VERCEL_URL || 'localhost:3000';
-
-  const resp = await fetch(`${protocol}://${host}/api/get-participant-token?room=${roomName}&username=${viewerId}&isHost=false`);
-
-  const { token } = await resp.json();
+  const token = await getParticipantToken(roomName, viewerId, false);
 
   const serverUrl = process.env.LIVEKIT_URL!;
 
