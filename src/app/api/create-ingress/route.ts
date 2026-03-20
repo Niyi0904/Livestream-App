@@ -2,8 +2,17 @@ import { IngressClient, IngressInput, IngressVideoEncodingPreset } from 'livekit
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const apiHost = process.env.LIVEKIT_URL!.replace("wss://", "https://");
-  const ingressClient = new IngressClient(apiHost, process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET);
+  const url = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+  if (!url || !apiKey || !apiSecret) {
+    console.error("Missing LiveKit environment variables", { url: !!url, apiKey: !!apiKey, apiSecret: !!apiSecret });
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
+  const apiHost = url.replace("wss://", "https://").replace("ws://", "http://");
+  const ingressClient = new IngressClient(apiHost, apiKey, apiSecret);
 
   try {
     const body = await req.json();
@@ -20,6 +29,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: ingress.url, streamKey: ingress.streamKey });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("Failed to create ingress:", e);
+    return NextResponse.json({ error: e.message || "Internal Server Error" }, { status: 500 });
   }
 }

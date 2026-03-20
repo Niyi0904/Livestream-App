@@ -51,6 +51,7 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
   const [_, copy] = useCopyToClipboard();
 
   const [localVideoTrack, setLocalVideoTrack] = useState<LocalVideoTrack>();
+  const [permissionError, setPermissionError] = useState(false);
   const localVideoEl = useRef<HTMLVideoElement>(null);
 
   const { metadata, name: roomName, state: roomState } = useRoomContext();
@@ -100,6 +101,9 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
           setLocalVideoTrack(camTrack as LocalVideoTrack);
         } catch (e: any) {
           console.error("Failed to create local tracks (permission denied?)", e);
+          if (e instanceof Error && e.name === "NotAllowedError") {
+            setPermissionError(true);
+          }
         }
       };
       void createTracks();
@@ -157,6 +161,28 @@ export function StreamPlayer({ isHost = false, obsMode = false }) {
   return (
     <div className="relative h-full w-full bg-black">
       <Grid className="w-full h-full absolute" gap="2">
+        {/* Permission Error Message */}
+        {permissionError && (
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            className="absolute w-full h-full bg-gray-2 z-20 p-4 text-center"
+            gap="3"
+          >
+            <Text size="3" weight="bold" color="red">
+              Camera or Microphone access denied
+            </Text>
+            <Text size="2" color="gray">
+              Please allow permissions in your browser settings and reload the
+              page to start streaming.
+            </Text>
+            <Button variant="soft" onClick={() => window.location.reload()}>
+              Reload Page
+            </Button>
+          </Flex>
+        )}
+
         {/* OBS/Ingress stream — auto-detected, takes over when active */}
         {obsIsLive && obsIngressTracks.map((t) => (
           <div key={`${t.participant.identity}-${t.source}`} className="w-full h-full relative">

@@ -8,8 +8,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing roomName' }, { status: 400 });
   }
 
-  const apiHost = process.env.LIVEKIT_URL!.replace('wss://', 'https://');
-  const egressClient = new EgressClient(apiHost, process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET);
+  const url = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+  if (!url || !apiKey || !apiSecret) {
+    console.error("Missing LiveKit environment variables", { url: !!url, apiKey: !!apiKey, apiSecret: !!apiSecret });
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
+  const apiHost = url.replace("wss://", "https://").replace("ws://", "http://");
+  const egressClient = new EgressClient(apiHost, apiKey, apiSecret);
 
   // Build the list of RTMP destination URLs
   const streamUrls: string[] = [];
@@ -34,6 +43,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ egressId: info.egressId });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Failed to start restream:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
